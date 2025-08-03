@@ -4,7 +4,7 @@
 require("dotenv").config();
 
 // Node.js command that imports a lib specifically to interact with a MYSQL DB.
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
 // Create a connection pool function, which is to handle multiple simultaneous requsts to the  server
 const db = mysql.createPool({
