@@ -10,7 +10,7 @@ const TaskModel = {
   // Get All Tasks by an User ID
   getTasksByUserId: async (userId) => {
     const [rows] = await db.query("SELECT * FROM tasks WHERE user_id = ?", [userId]);
-    return rows[0];
+    return rows;
   },
 
   // Get a Specific Task by ID
