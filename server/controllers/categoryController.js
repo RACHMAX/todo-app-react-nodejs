@@ -1,65 +1,69 @@
-
 const CategoryModel = require("../models/categoryModel");
 
-// Get all categories (optionally for a specific user)
+// GET all categories for authenticated user
 exports.getAllCategories = async (req, res) => {
-    try {
-        const { userId } = req.query; // Optional: pass ?userId= in query
-        const categories = await CategoryModel.getAllCategories(userId || null);
-        res.json(categories);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    const userId = req.user.id;
+    const categories = await CategoryModel.getAllCategories(userId);
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Get category by ID
+// GET a category by ID (must belong to user)
 exports.getCategoryById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const category = await CategoryModel.getCategoryById(id);
-        if (!category) {
-            return res.status(404).json({ error: "Category not found" });
-        }
-        res.json(category);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    const { id } = req.params;
+    const category = await CategoryModel.getCategoryById(id);
+    if (!category || category.user_id !== req.user.id) {
+      return res.status(404).json({ error: "Category not found" });
     }
+    res.json(category);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Create new category
+// POST create a new category for authenticated user
 exports.createCategory = async (req, res) => {
-    try {
-        const newCategoryId = await CategoryModel.createCategory(req.body);
-        res.status(201).json({ message: "Category created", categoryId: newCategoryId });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    const categoryData = { ...req.body, user_id: req.user.id };
+    const newCategoryId = await CategoryModel.createCategory(categoryData);
+    res.status(201).json({ message: "Category created", categoryId: newCategoryId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Update a category
+// PUT update a category (must belong to user)
 exports.updateCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const affectedRows = await CategoryModel.updateCategory(id, req.body);
-        if (affectedRows === 0) {
-            return res.status(404).json({ error: "Category not found" });
-        }
-        res.status(200).json({ message: "Category updated" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    const { id } = req.params;
+    const category = await CategoryModel.getCategoryById(id);
+    if (!category || category.user_id !== req.user.id) {
+      return res.status(404).json({ error: "Category not found" });
     }
+
+    await CategoryModel.updateCategory(id, req.body);
+    res.status(200).json({ message: "Category updated" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Delete a category
+// DELETE a category (must belong to user)
 exports.deleteCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const affectedRows = await CategoryModel.deleteCategory(id);
-        if (affectedRows === 0) {
-            return res.status(404).json({ error: "Category not found" });
-        }
-        res.status(200).json({ message: "Category deleted" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    const { id } = req.params;
+    const category = await CategoryModel.getCategoryById(id);
+    if (!category || category.user_id !== req.user.id) {
+      return res.status(404).json({ error: "Category not found" });
     }
+
+    await CategoryModel.deleteCategory(id);
+    res.status(200).json({ message: "Category deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

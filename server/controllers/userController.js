@@ -1,6 +1,6 @@
 const UserModel = require("../models/userModel");
 
-// Get All Users
+// GET all users (admin only)
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await UserModel.getAllUsers();
@@ -10,11 +10,11 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Get a user by ID
-exports.getUserById = async (req, res) => {
+// GET authenticated user's info
+exports.getMyUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const user = await UserModel.getUserById(id);
+    const userId = req.user.id;
+    const user = await UserModel.getUserById(userId);
     if (!user) {
       return res.status(404).json({ error: "User Not Found" });
     }
@@ -24,7 +24,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Create a new user
+// POST create a new user (registration)
 exports.createUser = async (req, res) => {
   try {
     const newUserId = await UserModel.createUser(req.body);
@@ -34,11 +34,11 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Update a user
-exports.updateUser = async (req, res) => {
+// PUT update authenticated user's info
+exports.updateMyUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const affectedRows = await UserModel.updateUser(id, req.body);
+    const userId = req.user.id;
+    const affectedRows = await UserModel.updateUser(userId, req.body);
     if (affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -48,11 +48,11 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Delete a user
-exports.deleteUser = async (req, res) => {
+// DELETE authenticated user
+exports.deleteMyUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const affectedRows = await UserModel.deleteUser(id);
+    const userId = req.user.id;
+    const affectedRows = await UserModel.deleteUser(userId);
     if (affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
